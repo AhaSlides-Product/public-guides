@@ -1,0 +1,7 @@
+{
+  "id": "elearning",
+  "name": "eLearning",
+  "icon": "/icons/system-elearning.svg",
+  "baseUrl": "https://elearning.dev.ahaslide.com",
+  "staticTabs": [{ "contentUrl": "/", "context": "home" }]
+}
