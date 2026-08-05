@@ -1,4 +1,61 @@
-<!doctype html><meta charset="utf-8">
-<title>AhaSlides public guides</title>
-<meta http-equiv="refresh" content="0; url=./elearning-preview-en/">
-<p><a href="./elearning-preview-en/">AhaSlides eLearning preview →</a></p>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AhaSlides public guides</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--
+      GitHub Pages serves this single root 404.html for every unknown path on the
+      whole site. Each sub-app here is a client-routed SPA (BrowserRouter with a
+      basename), so a deep link like /public-guides/elearning-preview-en/lesson/x
+      hits this file instead of the app. We keep the requested URL and boot the
+      matching app in place, so its router resolves the deep route. (PRO12-22)
+    -->
+    <script>
+      (function () {
+        var REPO = "/public-guides/";
+        var landing = '<p><a href="' + REPO + 'elearning-preview-en/">AhaSlides eLearning preview →</a></p>';
+
+        function showLanding() { document.body.innerHTML = landing; }
+
+        var path = location.pathname;
+        if (path.indexOf(REPO) !== 0) { showLanding(); return; }
+
+        var rest = path.slice(REPO.length);   // "elearning-preview-en/lesson/file-0129"
+        var app = rest.split("/")[0];         // "elearning-preview-en"
+        // Only boot an app for a real deep route (app dir + at least one more segment).
+        if (!app || rest.indexOf("/") === -1) { showLanding(); return; }
+
+        var appBase = REPO + app + "/";       // "/public-guides/elearning-preview-en/"
+
+        // Read the app's real (hash-versioned) index.html so this shim keeps
+        // working across rebuilds without knowing the asset filenames.
+        fetch(appBase + "index.html", { cache: "no-cache" })
+          .then(function (r) { if (!r.ok) throw r.status; return r.text(); })
+          .then(function (html) {
+            var doc = new DOMParser().parseFromString(html, "text/html");
+
+            var title = doc.querySelector("title");
+            if (title) document.title = title.textContent;
+
+            doc.querySelectorAll('link[rel="icon"], link[rel="stylesheet"], link[rel="manifest"]')
+              .forEach(function (l) { document.head.appendChild(l.cloneNode(true)); });
+
+            // Scripts parsed by DOMParser never execute; re-create them so they run.
+            doc.querySelectorAll("script").forEach(function (s) {
+              var n = document.createElement("script");
+              for (var i = 0; i < s.attributes.length; i++) {
+                n.setAttribute(s.attributes[i].name, s.attributes[i].value);
+              }
+              if (!s.src) n.textContent = s.textContent;
+              document.body.appendChild(n);
+            });
+          })
+          .catch(showLanding);
+      })();
+    </script>
+  </body>
+</html>
