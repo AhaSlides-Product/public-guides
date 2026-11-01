@@ -192,11 +192,12 @@ AhaSlides implements the following SCIM 2.0 endpoints under the base URL `https:
 
 | Scenario | Behavior |
 |---|---|
-| User assigned in Okta for the first time | AhaSlides checks if a user with that email exists. If yes, links them to your organization. If no, creates a new account with the `Editor` role. |
+| User assigned in Okta for the first time | AhaSlides checks whether a user with that email exists. If not, it creates a new account in your organisation with the `Editor` role. If the account exists but isn't in any organisation, it is added to yours. |
 | User's display name updated in Okta | AhaSlides updates `firstName` and `lastName` accordingly |
 | User deactivated or unassigned in Okta | AhaSlides sets `active = false` — the user can no longer log in |
 | User reactivated in Okta | AhaSlides sets `active = true` — login is re-enabled |
-| User already in AhaSlides with a different organization | The user is re-associated to your organization and their role is updated |
+| User already a member of your organisation (active or deactivated) | The existing member is kept and reactivated; no new account is created |
+| User already a member of a different AhaSlides organisation | AhaSlides returns `409 Conflict` (`scimType: uniqueness`) and changes nothing; the user stays in their current organisation |
 
 > **Role assignment:** All SCIM-provisioned users are assigned the `Editor` role by default. Roles can be adjusted manually by your AhaSlides organization owner after provisioning.
 
@@ -220,7 +221,8 @@ AhaSlides implements the following SCIM 2.0 endpoints under the base URL `https:
 | Users not being deactivated | Okta feature "Deactivate Users" not enabled | Enable **Deactivate Users** in the Provisioning → To App settings |
 | Incorrect name in AhaSlides | `displayName` not mapped in Okta | Verify the `displayName` attribute mapping in Okta points to `user.displayName` |
 | Filter queries returning no results | Email case mismatch | AhaSlides stores emails in **lowercase**; ensure Okta sends lowercase emails |
-| `500 Internal Server Error` on user creation | Duplicate or invalid data | Check that `userName` is a valid email address; contact AhaSlides support with the error details |
+| `409 Conflict` on user creation or update | The email is already used by an account in another AhaSlides organisation | The account isn't moved. Ask the person to leave their other organisation, or contact AhaSlides support |
+| `500 Internal Server Error` on user creation | Invalid data | Check that `userName` is a valid email address; contact AhaSlides support with the error details |
 
 ---
 
